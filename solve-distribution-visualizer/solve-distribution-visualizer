@@ -1,0 +1,64 @@
+#!/usr/bin/env python3
+
+import matplotlib.pyplot as plt
+from scipy.stats import norm, gaussian_kde
+import numpy as np
+import csv
+
+def main():
+    #Import data
+    solves = []
+    solvesFloat = []
+    with open('solves', 'r') as file:
+        reader = csv.reader(file, delimiter=';')
+        #prune all but times
+        next(reader)
+        for line in reader:
+            solves.append(line[1])
+    for solve in solves:
+        solvesFloat.append(float(solve))
+    solvesFloat.sort()
+    minimum = solvesFloat[0]
+    maximum = solvesFloat[(len(solvesFloat) - 1)]
+    #compute probability distribution.
+    #times, probabities = computeDistribution(solvesFloat)
+    #plot the data
+    data = np.array(solvesFloat)
+    kernel = gaussian_kde(data)
+
+    xpoints = np.linspace(minimum, maximum, 1000)
+    ypoints = kernel.evaluate(xpoints)
+
+    plt.plot(xpoints,ypoints)
+    plt.xlim([minimum, maximum])
+    plt.show()
+
+
+def computeDistribution(solves):
+    #Sort the times in ascending order.
+    #loop through times.
+    value = 1
+    tm1 = solves[0]
+    times = []
+    probabities = []
+    i = 1
+    while i < len(solves):
+        #if time(t) == time(t-1) inc value by 1
+        if solves[i] == tm1:
+            value += 1
+        #if time(t) != time(t-1) append((time(t-1), value/(length of list))), value = 1
+        if solves[i] != tm1:
+            times.append(tm1)
+            probabities.append(value/len(solves))
+            value = 1
+        #Handle case for last item in the list
+        if i == (len(solves) - 1):
+            times.append(solves[i])
+            probabities.append(value/len(solves))
+        tm1 = solves[i]
+        i += 1
+    #After this loop completes the resulting list will contain times and their probability, tus being a true probability distribution.
+    return (times, probabities)
+
+if __name__ == "__main__":
+    main()
